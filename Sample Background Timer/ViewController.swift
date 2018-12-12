@@ -11,22 +11,24 @@ import UIKit
 class ViewController: UIViewController {
 
     var count = 0
-    let t = RepeatingTimer(timeInterval: 3)
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        t.eventHandler = {
-            self.eventFired()
-        }
-        t.resume()
     }
     
     func eventFired() {
         print("Event fired. Number of times ", count)
         count = count + 1
-        if count == 4 {
-            t.suspend()
+    }
+    
+    @IBAction func startTimerAction(_ sender: Any) {
+        RepeatingTimer.eventHandler = {
+            self.eventFired()
         }
+        RepeatingTimer.timer.resume()
+    }
+    
+    @IBAction func finishTimerAction(_ sender: Any) {
+        RepeatingTimer.timer.suspend()
     }
 }

@@ -10,50 +10,46 @@ import Foundation
 
 class RepeatingTimer {
     
-    let timeInterval: TimeInterval
+    static var timeInterval: TimeInterval = 1
+    static var t = DispatchSource.makeTimerSource()
     
-    init(timeInterval: TimeInterval) {
-        self.timeInterval = timeInterval
-    }
-    
-    private lazy var timer: DispatchSourceTimer = {
-        let t = DispatchSource.makeTimerSource()
-        t.schedule(deadline: .now() + self.timeInterval, repeating: self.timeInterval)
-        t.setEventHandler(handler: { [weak self] in
-            self?.eventHandler?()
+    static var timer: DispatchSourceTimer = {
+        RepeatingTimer.t.schedule(deadline: .now() + RepeatingTimer.timeInterval, repeating: RepeatingTimer.timeInterval)
+        RepeatingTimer.t.setEventHandler(handler: {
+            RepeatingTimer.eventHandler?()
         })
-        return t
+        return RepeatingTimer.t
     }()
     
-    var eventHandler: (() -> Void)?
+    static var eventHandler: (() -> Void)?
     
     private enum State {
         case suspended
         case resumed
     }
     
-    private var state: State = .suspended
+    private static var state: State = .suspended
     
     deinit {
-        timer.setEventHandler {}
-        timer.cancel()
-        resume()
-        eventHandler = nil
+        RepeatingTimer.timer.setEventHandler {}
+        RepeatingTimer.timer.cancel()
+        RepeatingTimer.resume()
+        RepeatingTimer.eventHandler = nil
     }
     
-    func resume() {
-        if state == .resumed {
+    static func resume() {
+        if RepeatingTimer.state == .resumed {
             return
         }
-        state = .resumed
-        timer.resume()
+        RepeatingTimer.state = .resumed
+        RepeatingTimer.t.resume()
     }
     
-    func suspend() {
-        if state == .suspended {
+    static func suspend() {
+        if RepeatingTimer.state == .suspended {
             return
         }
-        state = .suspended
-        timer.suspend()
+        RepeatingTimer.state = .suspended
+        RepeatingTimer.t.suspend()
     }
 }
